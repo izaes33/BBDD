@@ -1,0 +1,5 @@
+Ejercicio 1 — Universidad
+Crea el modelo E-R de un sistema de gestión universitaria con:
+• Entidades: Alumno, Profesor, Asignatura, Matrícula.
+• Incluye cardinalidades adecuadas. Pista: Un alumno puede matricularse en varias asignaturas y cada
+asignatura puede tener muchos alumnos.
