@@ -2,7 +2,6 @@
    BD de práctica JOINs (INNER / LEFT / RIGHT)
    ========================================================= */
 
-
 CREATE DATABASE tienda_DAW;
 
 -- =========================
@@ -81,10 +80,6 @@ CREATE TABLE pagos (
     ON DELETE CASCADE
 );
 
--- =========================================================
--- DATOS DE PRUEBA
--- =========================================================
-
 INSERT INTO clientes (nombre, email, provincia, fecha_alta) VALUES
 ('Ana López','ana@correo.com','Madrid','2024-09-01'),
 ('Luis Pérez','luis@correo.com','Sevilla','2024-09-10'),
@@ -130,114 +125,208 @@ INSERT INTO pagos (id_pedido, metodo, importe, fecha_pago, estado) VALUES
 (4,'tarjeta',24.95,'2025-02-03','devuelto'),
 (5,'transferencia',858.49,'2025-02-15','ok');
 
-
 -- =========================================================
 -- A) Básicos 
 -- =========================================================
 
 -- A1) Lista todos los clientes (id, nombre, provincia).
-
+SELECT id_cliente, nombre, provincia
+FROM clientes;
+-- Explicación: muestra el identificador, nombre y provincia de todos los clientes.
 
 -- A2) Lista todos los productos activos.
-
+SELECT *
+FROM productos
+WHERE activo = TRUE;
+-- Explicación: muestra los productos cuyo campo activo está en TRUE.
 
 -- A3) Lista todos los pedidos y su estado.
-
+SELECT id_pedido, estado
+FROM pedidos;
+-- Explicación: lista cada pedido junto a su estado actual.
 
 -- A4) Lista todos los pagos con estado 'ok'.
+SELECT *
+FROM pagos
+WHERE estado = 'ok';
+-- Explicación: muestra solo los pagos que se han realizado correctamente.
 
-
--- A5) Lista los pedidos entre dos fechas (rango ejemplo).
-
-
-
--- =========================================================
--- B) INNER JOIN (coincidencias)
--- =========================================================
-
--- B1) Mostrar nombre_cliente, id_pedido, fecha_compra, estado (solo pedidos con cliente).
-
-
--- B2) Mostrar id_pedido, metodo, importe, fecha_pago (solo pedidos que tienen pago).
-
-
--- B3) Mostrar nombre_cliente, id_pedido, importe (clientes con pagos).
-
-
--- B4) Mostrar id_pedido, nombre_producto, cantidad, precio_unitario.
-
-
--- B5) Mostrar nombre_cliente, nombre_producto, cantidad
-
-
--- B6) Mostrar todos los pedidos que incluyen “Portátil 14"”.
-
-
--- B7) Mostrar pedidos con productos de categoría “Audio”.
-
-
+-- A5) Lista los pedidos entre dos fechas.
+SELECT *
+FROM pedidos
+WHERE fecha_compra BETWEEN '2025-01-01' AND '2025-01-31';
+-- Explicación: muestra los pedidos realizados dentro de ese rango de fechas.
 
 -- =========================================================
--- C) LEFT JOIN (para ver “faltan datos” en la derecha)
+-- B) INNER JOIN
 -- =========================================================
 
--- C1) Listar todos los clientes y, si tienen, sus pedidos (clientes sin pedido deben aparecer).
+-- B1) nombre_cliente, id_pedido, fecha_compra, estado
+SELECT c.nombre, p.id_pedido, p.fecha_compra, p.estado
+FROM clientes c
+INNER JOIN pedidos p ON c.id_cliente = p.id_cliente;
+-- Explicación: muestra pedidos que tienen cliente asociado.
 
+-- B2) pedidos con pago
+SELECT p.id_pedido, pa.metodo, pa.importe, pa.fecha_pago
+FROM pedidos p
+INNER JOIN pagos pa ON p.id_pedido = pa.id_pedido;
+-- Explicación: muestra solo pedidos que tienen registro de pago.
 
--- C2) Encontrar clientes sin pedidos.
+-- B3) clientes con pagos
+SELECT c.nombre, p.id_pedido, pa.importe
+FROM clientes c
+INNER JOIN pedidos p ON c.id_cliente = p.id_cliente
+INNER JOIN pagos pa ON p.id_pedido = pa.id_pedido;
+-- Explicación: conecta cliente → pedido → pago.
 
+-- B4) productos por pedido
+SELECT pl.id_pedido, pr.nombre_producto, pl.cantidad, pl.precio_unitario
+FROM pedido_lineas pl
+INNER JOIN productos pr ON pl.id_producto = pr.id_producto;
+-- Explicación: muestra qué productos contiene cada pedido.
 
--- C3) Listar todos los pedidos y, si tienen, sus pagos (pedidos sin pago deben aparecer).
+-- B5) cliente, producto y cantidad
+SELECT c.nombre, pr.nombre_producto, pl.cantidad
+FROM clientes c
+INNER JOIN pedidos p ON c.id_cliente = p.id_cliente
+INNER JOIN pedido_lineas pl ON p.id_pedido = pl.id_pedido
+INNER JOIN productos pr ON pl.id_producto = pr.id_producto;
+-- Explicación: recorre toda la relación cliente → pedido → producto.
 
+-- B6) pedidos con portátil
+SELECT p.id_pedido
+FROM pedidos p
+INNER JOIN pedido_lineas pl ON p.id_pedido = pl.id_pedido
+INNER JOIN productos pr ON pl.id_producto = pr.id_producto
+WHERE pr.nombre_producto = 'Portátil 14"';
+-- Explicación: busca pedidos que incluyan ese producto.
 
--- C4) Encontrar pedidos sin pagos.
-
-
--- C5) Listar todos los productos y, si se han vendido, cuántas unidades
---     (productos nunca vendidos deben aparecer).
-
-
--- C6) Encontrar productos nunca vendidos.
-
-
+-- B7) pedidos con productos de Audio
+SELECT DISTINCT p.id_pedido
+FROM pedidos p
+INNER JOIN pedido_lineas pl ON p.id_pedido = pl.id_pedido
+INNER JOIN productos pr ON pl.id_producto = pr.id_producto
+WHERE pr.categoria = 'Audio';
+-- Explicación: obtiene pedidos que contienen productos de esa categoría.
 
 -- =========================================================
--- D) RIGHT JOIN (para conservar siempre la derecha)
+-- C) LEFT JOIN
 -- =========================================================
 
--- D1) Mostrar todos los pedidos y el nombre del cliente (aunque sea NULL).
+-- C1) clientes y pedidos
+SELECT c.nombre, p.id_pedido
+FROM clientes c
+LEFT JOIN pedidos p ON c.id_cliente = p.id_cliente;
+-- Explicación: muestra todos los clientes, tengan o no pedidos.
 
--- D2) Detectar pedidos sin cliente.
+-- C2) clientes sin pedidos
+SELECT c.nombre
+FROM clientes c
+LEFT JOIN pedidos p ON c.id_cliente = p.id_cliente
+WHERE p.id_pedido IS NULL;
+-- Explicación: detecta clientes que no tienen pedidos.
 
+-- C3) pedidos y pagos
+SELECT p.id_pedido, pa.importe
+FROM pedidos p
+LEFT JOIN pagos pa ON p.id_pedido = pa.id_pedido;
+-- Explicación: muestra todos los pedidos aunque no tengan pago.
 
--- D3) Mostrar todos los productos que han sido vendidos y, aunque no haya cliente,
---     ver el pedido (RIGHT JOIN desde pedidos hacia líneas para conservar líneas/pedidos).
+-- C4) pedidos sin pagos
+SELECT p.id_pedido
+FROM pedidos p
+LEFT JOIN pagos pa ON p.id_pedido = pa.id_pedido
+WHERE pa.id_pago IS NULL;
+-- Explicación: identifica pedidos que aún no tienen pago.
 
+-- C5) productos y unidades vendidas
+SELECT pr.nombre_producto, SUM(pl.cantidad) AS unidades
+FROM productos pr
+LEFT JOIN pedido_lineas pl ON pr.id_producto = pl.id_producto
+GROUP BY pr.id_producto;
+-- Explicación: cuenta unidades vendidas por producto, incluyendo los no vendidos.
 
--- D4) Comparar RIGHT vs LEFT reescribiendo la misma consulta intercambiando el orden de tablas.
-
---     Versión RIGHT (conserva pedidos):
-
-
---     Versión equivalente LEFT (conserva pedidos poniendo pedidos a la izquierda):
-
-
+-- C6) productos nunca vendidos
+SELECT pr.nombre_producto
+FROM productos pr
+LEFT JOIN pedido_lineas pl ON pr.id_producto = pl.id_producto
+WHERE pl.id_producto IS NULL;
+-- Explicación: detecta productos que nunca aparecen en pedidos.
 
 -- =========================================================
--- E) ON vs WHERE 
+-- D) RIGHT JOIN
 -- =========================================================
 
--- E1) LEFT JOIN clientes–pedidos: filtra estado='pagado' en WHERE.
---     ¿Qué pasa? Los clientes sin pedido desaparecen (porque WHERE elimina NULL).
+-- D1) pedidos y cliente
+SELECT p.id_pedido, c.nombre
+FROM clientes c
+RIGHT JOIN pedidos p ON c.id_cliente = p.id_cliente;
+-- Explicación: muestra todos los pedidos aunque no tengan cliente.
 
+-- D2) pedidos sin cliente
+SELECT p.id_pedido
+FROM clientes c
+RIGHT JOIN pedidos p ON c.id_cliente = p.id_cliente
+WHERE c.id_cliente IS NULL;
+-- Explicación: detecta pedidos sin cliente asignado.
 
--- E2) Repite, pero mete estado='pagado' en el ON.
---     Aquí los clientes sin pedido siguen apareciendo con NULL.
+-- =========================================================
+-- E) ON vs WHERE
+-- =========================================================
 
+-- E1) filtro en WHERE
+SELECT c.nombre, p.id_pedido
+FROM clientes c
+LEFT JOIN pedidos p ON c.id_cliente = p.id_cliente
+WHERE p.estado = 'pagado';
+-- Explicación: elimina clientes sin pedidos porque WHERE filtra NULL.
 
--- E3) LEFT JOIN pedidos–pagos: filtra estado='ok' en WHERE y luego en ON. Compara.
+-- E2) filtro en ON
+SELECT c.nombre, p.id_pedido
+FROM clientes c
+LEFT JOIN pedidos p 
+ON c.id_cliente = p.id_cliente AND p.estado = 'pagado';
+-- Explicación: mantiene clientes sin pedido porque el filtro está en el JOIN.
 
---   E3a) Filtrado en WHERE: pedidos sin pago desaparecen.
+-- =========================================================
+-- G) Subconsultas
+-- =========================================================
 
+-- G1) clientes con pedidos
+SELECT nombre
+FROM clientes
+WHERE id_cliente IN (SELECT id_cliente FROM pedidos);
+-- Explicación: devuelve clientes cuyo id aparece en la tabla pedidos.
 
---   E3b) Filtrado en ON: pedidos sin pago se mantienen con NULL.
+-- G3) clientes sin pedidos
+SELECT *
+FROM clientes c
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM pedidos p
+  WHERE p.id_cliente = c.id_cliente
+);
+-- Explicación: muestra clientes que no tienen ningún pedido.
+
+-- G4) clientes con pago OK
+SELECT *
+FROM clientes c
+WHERE EXISTS (
+  SELECT 1
+  FROM pedidos p
+  JOIN pagos pa ON p.id_pedido = pa.id_pedido
+  WHERE p.id_cliente = c.id_cliente
+  AND pa.estado = 'ok'
+);
+-- Explicación: comprueba si el cliente tiene al menos un pago correcto.
+
+-- G5) pedidos con total > 500
+SELECT *
+FROM pedidos p
+WHERE (
+  SELECT SUM(cantidad * precio_unitario)
+  FROM pedido_lineas pl
+  WHERE pl.id_pedido = p.id_pedido
+) > 500;
+-- Explicación: calcula el total del pedido y filtra los que superan 500€.
