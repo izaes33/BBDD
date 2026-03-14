@@ -50,13 +50,14 @@ INSERT INTO reparaciones (vehiculo_id, precio) VALUES
 -- CONSULTAS DML: GROUP BY Y HAVING
 -- =========================================================
 
--- Usuarios por rol
+-- Número de suarios por rol
 SELECT rol, COUNT(*) AS total_usuarios 
 FROM usuarios 
 GROUP BY rol;
--- Explicación: Agrupa los registros por la columna 'rol' y cuenta cuántas filas pertenecen a cada grupo (admin, técnico, etc.).
+-- Explicación: Cuenta cuántas filas pertenecen a cada rol creando un columna llamada total_usuarios, de la tabla usuarios
+-- Y agrupa los registros por la columna 'rol'
 
--- Incidencias por prioridad
+-- Número de incidencias por prioridad
 SELECT prioridad, COUNT(*) AS total 
 FROM incidencias 
 GROUP BY prioridad;
@@ -67,7 +68,8 @@ SELECT estado, COUNT(*)
 FROM incidencias 
 GROUP BY estado 
 HAVING COUNT(*) > 10;
--- Explicación: Aquí usamos HAVING porque queremos filtrar un resultado calculado (el conteo). Solo nos mostrará estados muy "congestionados".
+-- Explicación: Aquí usamos HAVING porque queremos filtrar un resultado calculado (el conteo). 
+--Solo nos mostrará estados muy "congestionados".
 
 -- Precio medio de reparaciones por vehículo
 SELECT vehiculo_id, AVG(precio) AS precio_medio 
@@ -83,11 +85,18 @@ GROUP BY estado;
 -- Explicación: Primero eliminamos las resueltas con WHERE (antes de agrupar) y luego contamos lo que queda por estado.
 
 -- Prioridades con más de 5 incidencias abiertas
-SELECT prioridad, COUNT(*) 
+SELECT prioridad, COUNT(*)
+-- Selecciona las columnas que aparecerán en el resultado
+-- 'prioridad' muestra el nivel de prioridad de las incidencias
+-- COUNT(*) cuenta cuántas incidencias hay en cada grupo
 FROM incidencias 
 WHERE estado = 'abierta' 
+-- Filtra los registros antes de agruparlos
 GROUP BY prioridad 
+-- Permite contar cuántas incidencias abiertas hay en cada nivel de prioridad
 HAVING COUNT(*) > 5;
+-- Filtra los grupos generados por GROUP BY
+-- Solo se muestran las prioridades que tienen más de 5 incidencias abiertas
 -- Explicación: Filtramos primero las 'abiertas', agrupamos por prioridad y finalmente usamos HAVING para ver cuáles superan el umbral de 5.
 
 -- Roles que tengan más de 1 usuario
@@ -109,8 +118,15 @@ FROM incidencias;
 
 -- Incidencias por estado y prioridad
 SELECT estado, prioridad, COUNT(*) 
+-- Selecciona las columnas que aparecerán en el resultado
+-- 'estado' muestra el estado de cada incidencia (por ejemplo: abierta, cerrada, en proceso)
+-- 'prioridad' muestra el nivel de prioridad de la incidencia
+-- COUNT(*) cuenta cuántas incidencias hay en cada grupo
 FROM incidencias 
 GROUP BY estado, prioridad;
+-- Agrupa los registros por las columnas 'estado' y 'prioridad'
+-- Se crea un grupo por cada combinación única de estado y prioridad
+-- Esto permite contar cuántas incidencias hay en cada combinación
 -- Explicación: Agrupamiento múltiple. Crea subgrupos (ej. 'abierta-alta', 'abierta-media') para un análisis más detallado.
 
 -- Estados que tengan incidencias de prioridad alta
@@ -122,20 +138,35 @@ GROUP BY estado;
 
 -- Estados con más de 2 incidencias no resueltas
 SELECT estado, COUNT(*) 
+-- Selecciona las columnas que aparecerán en el resultado
+-- 'estado' muestra el estado de las incidencias
+-- COUNT(*) cuenta cuántas incidencias hay en cada estado
 FROM incidencias 
-WHERE estado <> 'resuelta' 
+WHERE estado <> 'resuelta'
+-- Filtra los registros antes de agruparlos
+-- Excluye las incidencias cuyo estado sea 'resuelta'
 GROUP BY estado 
+-- Permite contar cuántas incidencias hay en cada estado 
 HAVING COUNT(*) > 2;
+-- Filtra los grupos generados por GROUP BY
+-- (Solo se muestran los estados que tienen más de 2 incidencias).
 -- Explicación: Combina exclusión de filas (WHERE), agrupamiento y filtrado de grupos (HAVING).
+
 
 -- Prioridad con más incidencias en estado abierto
 SELECT prioridad, COUNT(*) 
+-- 'prioridad' muestra el nivel de prioridad de las incidencias
+-- COUNT(*) cuenta cuántas incidencias hay en cada grupo
 FROM incidencias 
 WHERE estado = 'abierta' 
+-- Filtra los registros antes de agruparlos
 GROUP BY prioridad 
+-- Permite contar cuántas incidencias abiertas hay en cada nivel de prioridad
 ORDER BY COUNT(*) DESC 
 LIMIT 1;
+-- Devuelve únicamente la prioridad con más incidencias abiertas
 -- Explicación: Filtramos abiertas, contamos, ordenamos de mayor a menor y nos quedamos solo con la primera fila (la más frecuente).
+
 
 -- Número de incidencias por estado (ordenadas de mayor a menor)
 SELECT estado, COUNT(*) 
