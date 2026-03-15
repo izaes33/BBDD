@@ -8,6 +8,7 @@
    3) DML de PRÁCTICA con ENUNCIADOS
    ========================================================= */
 
+
 -- =========================================================
 -- 1) CREACIÓN DE LA BASE DE DATOS
 -- =========================================================
@@ -66,25 +67,65 @@ CREATE TABLE clase (
   -- Sala donde se imparte la clase
   id_sala INT NOT NULL,
   FOREIGN KEY (id_sala) REFERENCES sala (id_sala)
-
 );
+
 
 -- =========================================================
 -- VISTAS (Necesarias para las consultas 6 y 7)
 -- =========================================================
 
+-- Crea una vista llamada vista_clases_detalle
+-- Una vista es una tabla virtual basada en una consulta
 CREATE VIEW vista_clases_detalle AS
-SELECT c.id_clase, c.nombre AS nombre_clase, s.nombre AS nombre_socio, s.id_socio, i.nombre AS nombre_instructor, sa.nombre AS nombre_sala
-FROM clase c
-JOIN socio s ON c.id_socio = s.id_socio
-JOIN instructor i ON c.id_instructor = i.id_instructor
-JOIN sala sa ON c.id_sala = sa.id_sala;
 
+-- Selecciona las columnas que tendrá la vista
+SELECT 
+    c.id_clase,                     -- ID de la clase (de la tabla clase)
+    c.nombre AS nombre_clase,       -- Nombre de la clase, renombrado como "nombre_clase"
+    s.id_socio,                     -- ID del socio
+    s.nombre AS nombre_socio,       -- Nombre del socio que reservó la clase
+    i.nombre AS nombre_instructor,  -- Nombre del instructor que imparte la clase
+    sa.nombre AS nombre_sala        -- Nombre de la sala donde se realiza la clase
+
+-- Tabla principal de la consulta
+FROM clase c                        -- Tabla "clase" con alias "c"
+
+-- Une la tabla clase con la tabla socio
+JOIN socio s 
+ON c.id_socio = s.id_socio          -- Relaciona la clase con el socio que la reservó
+
+-- Une la tabla clase con la tabla instructor
+JOIN instructor i 
+ON c.id_instructor = i.id_instructor -- Relaciona la clase con el instructor que la imparte
+
+-- Une la tabla clase con la tabla sala
+JOIN sala sa 
+ON c.id_sala = sa.id_sala;          -- Relaciona la clase con la sala donde se realiza
+
+
+-- Crea una segunda vista llamada vista_reservas_por_socio
+-- Esta vista servirá para contar cuántas clases reserva cada socio
 CREATE VIEW vista_reservas_por_socio AS
-SELECT s.nombre, COUNT(c.id_clase) AS num_clases_reservadas
-FROM socio s
-LEFT JOIN clase c ON s.id_socio = c.id_socio
-GROUP BY s.id_socio;
+
+-- Selecciona el nombre del socio y el número de clases reservadas
+SELECT 
+    s.nombre,                        -- Nombre del socio
+    COUNT(c.id_clase) AS num_clases_reservadas -- Cuenta cuántas clases ha reservado el socio
+
+-- Tabla principal de la consulta
+FROM socio s                         -- Tabla "socio" con alias "s"
+
+-- LEFT JOIN une socio con clase
+-- Permite mostrar todos los socios incluso si no tienen reservas
+LEFT JOIN clase c 
+ON s.id_socio = c.id_socio           -- Relaciona cada socio con sus clases reservadas
+
+-- Agrupa los resultados por socio para poder usar COUNT
+GROUP BY s.id_socio;                 -- Cada socio tendrá su propio conteo de clases
+
+/* COUNT() solo	                    -> Devuelve un total
+   COUNT() + columnas sin GROUP BY	-> Error
+   COUNT() + columnas con GROUP BY	-> Cuenta por cada grupo! */
 
 
 -- =========================================================
