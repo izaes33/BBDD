@@ -66,6 +66,8 @@ INSERT INTO prestamos (id_prestamo, id_libro, id_usuario, fecha_prestamo, fecha_
 (2, 3, 2, '2026-02-10', NULL),
 (3, 6, 4, '2026-02-15', '2026-02-28');
 
+----------------------------------------------------------------------------------------
+
 -- SELECT BÁSICOS
 
 -- 1. Mostrar todos los libros
@@ -105,6 +107,8 @@ SELECT * FROM libros
 WHERE disponible = TRUE
 ORDER BY anio DESC;
 -- Explicación: muestra solo los libros disponibles y los ordena desde el más reciente.
+
+----------------------------------------------------------------------------------------
 
 -- UPDATE
 
@@ -147,6 +151,8 @@ SET edad = edad + 1
 WHERE edad > 25;
 -- Explicación: incrementa en 1 la edad de los usuarios que tienen más de 25 años.
 
+----------------------------------------------------------------------------------------
+
 -- DELETE
 
 -- SELECT previo a usuarios mayores de edad
@@ -181,7 +187,21 @@ SELECT *
 FROM libros;
 -- Explicación: muestra los libros restantes tras el borrado.
 
+----------------------------------------------------------------------------------------
+
 -- JOIN, INNER JOIN, LEFT JOIN, RIGHT JOIN
+
+/* DIFERENCIA ENTRE INNER, LEFT Y JOIN:
+1. INNER JOIN (La intersección): ->> Resultado: Solo lo común.
+Muestra solo las filas que tienen coincidencia en ambas tablas. Si un registro de la Tabla A no tiene su "pareja" 
+en la Tabla B, simplemente no aparece en el resultado.
+2. LEFT JOIN (Prioridad izquierda) ->> Cuando quieres el listado completo de algo, aunque no tengan datos asociados en la otra tabla.
+Muestra todos los datos de la tabla de la izquierda (Tabla A), más las coincidencias que encuentre en la derecha (Tabla B).
+(Si no hay coincidencia: Los campos de la Tabla B aparecerán vacíos (NULL)).
+3. RIGHT JOIN (Prioridad derecha) ->> Si no hay coincidencia: Los campos de la Tabla A aparecerán como NULL.
+Es el espejo del anterior. Muestra todos los datos de la tabla de la derecha (Tabla B), más las coincidencias de la izquierda (Tabla A).
+(Se usa mucho menos que el LEFT JOIN, ya que casi siempre puedes lograr lo mismo cambiando el orden de las tablas). 
+(TABLA A = FROM ; TABLA B = INNER/RIGHT/LEFT) */
 
 -- 13. Mostrar préstamos con nombre de usuario y título del libro
 SELECT p.id_prestamo, u.nombre, l.titulo, p.fecha_prestamo
@@ -203,6 +223,8 @@ SELECT u.nombre, p.id_prestamo, p.fecha_prestamo
 FROM usuarios u
 RIGHT JOIN prestamos p ON u.id_usuario = p.id_usuario;
 -- Explicación: muestra todos los préstamos y los usuarios que los realizaron.
+
+----------------------------------------------------------------------------------------
 
 -- FUNCIONES DE AGREGACIÓN
 
@@ -237,6 +259,8 @@ FROM libros
 WHERE disponible = TRUE;
 -- Explicación: cuenta cuántos libros están disponibles para préstamo.
 
+---------------------------------------------------------------------------------
+
 -- GROUP BY Y HAVING
 
 -- 22. Contar cuántos libros hay por género
@@ -265,7 +289,27 @@ GROUP BY id_usuario
 HAVING COUNT(*) >= 1;
 -- Explicación: filtra los usuarios que han realizado al menos un préstamo.
 
--- SUBCONSULTAS
+-----------------------------------------------------------------------------------
+
+-- SUBCONSULTAS ( IN () )
+/*El fundamento de una subconsulta es, en esencia, la anidación de lógica. 
+Imagina que estás haciendo una pregunta cuya respuesta depende de la respuesta a 
+otra pregunta previa.
+En SQL, una subconsulta (o inner query) es una sentencia SELECT que se ejecuta 
+dentro de otra sentencia más grande (outer query). El motor de la base de datos 
+resuelve primero la "pregunta interna" y utiliza ese resultado para completar la 
+"pregunta externa".
+Dependiendo de dónde las coloques, su función cambia radicalmente:
+- A. En el WHERE (Como filtro dinámico) ->> Es el uso más común. 
+En lugar de escribir un valor fijo (como "ID = 5"), dejas que la subconsulta encuentre 
+el ID correcto.
+Ejemplo: "Busca los libros cuyo autor sea el mismo que el del libro 'El Quijote'".
+- B. En el FROM (Como tabla temporal) ->> Aquí la subconsulta actúa como una tabla derivada. 
+El resultado de la subconsulta se trata como si fuera una tabla real sobre la cual puedes 
+volver a filtrar o agrupar.
+- C. En el SELECT (Como columna calculada) ->>
+Se usa para traer un dato específico de otra tabla para cada fila del resultado principal.
+Ejemplo: Al listar clientes, mostrar en una columna extra la fecha de su última compra.*/
 
 -- 26. Mostrar usuarios que tienen préstamos
 SELECT nombre
