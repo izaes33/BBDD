@@ -193,15 +193,14 @@ FROM libros;
 
 /* DIFERENCIA ENTRE INNER, LEFT Y JOIN:
 1. INNER JOIN (La intersección): ->> Resultado: Solo lo común.
-Muestra solo las filas que tienen coincidencia en ambas tablas. Si un registro de la Tabla A no tiene su "pareja" 
-en la Tabla B, simplemente no aparece en el resultado.
-2. LEFT JOIN (Prioridad izquierda) ->> Cuando quieres el listado completo de algo, aunque no tengan datos asociados en la otra tabla.
-Muestra todos los datos de la tabla de la izquierda (Tabla A), más las coincidencias que encuentre en la derecha (Tabla B).
-(Si no hay coincidencia: Los campos de la Tabla B aparecerán vacíos (NULL)).
-3. RIGHT JOIN (Prioridad derecha) ->> Si no hay coincidencia: Los campos de la Tabla A aparecerán como NULL.
-Es el espejo del anterior. Muestra todos los datos de la tabla de la derecha (Tabla B), más las coincidencias de la izquierda (Tabla A).
+Muestra solo las filas que tienen coincidencia en ambas tablas.
+2. LEFT JOIN (Prioridad izquierda) ->> Muestra todos los datos de la tabla de la izquierda (FROM), 
+más las coincidencias que encuentre en la derecha.
+(Si no hay coincidencia: Los campos de la Tabla que queda a la derecha aparecerán vacíos (NULL)).
+3. RIGHT JOIN (Prioridad derecha) ->> Es el espejo del anterior.
 (Se usa mucho menos que el LEFT JOIN, ya que casi siempre puedes lograr lo mismo cambiando el orden de las tablas). 
-(TABLA A = FROM ; TABLA B = INNER/RIGHT/LEFT) */
+LEFT JOIN -> Todo de from (el que está a la izquierda) y coincdencias
+RIGHT JOIN -> Coincidencias en from (que se ubica a la derecha) y todo de la otra */
 
 -- 13. Mostrar préstamos con nombre de usuario y título del libro
 SELECT p.id_prestamo, u.nombre, l.titulo, p.fecha_prestamo
